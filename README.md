@@ -14,6 +14,12 @@ Then, install the dependencies and run the gateway:
     $ npm install
     $ ./node_modules/node-xmpp-bosh/run-server.js
 
+Now you can start the static web server in another terminal:
+
+    $ node server.js
+
+and open your browser at http://localhost:5000/
+
 
 License
 -------
