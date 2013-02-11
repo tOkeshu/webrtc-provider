@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebRTC Provider</title>
+    <meta charset="UTF-8"/>
+    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/Element.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/parser.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/lib/bind.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/lib/EventEmitter.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/lib/md5.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/lightstring.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/transports/websocket.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/stanza.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/jid.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/plugins/DIGEST-MD5.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/plugins/presence.js"></script>
+    <script type="application/javascript" src="/lib/lightstring/plugins/im.js"></script>
+
+    <script type="application/javascript" src="/client.js"></script>
+  </head>
+  <body>
+    <div id="login" style="text-align: center">
+      <form name="cred">
+        <label for="jid">JID:</label>
+        <input type="text" id="jid" />
+        <label for="pass">Password:</label>
+        <input type="password" id="pass" />
+        <input type="submit" id="connect" value="connect" />
+      </form>
+    </div>
+    <hr />
+    <div id="log"></div>
+  </body>
+</html>
+
