@@ -8,5 +8,6 @@
   },
   "dependencies": {
     "node-xmpp-bosh": " 0.7.x",
-  }
+    "express": "3.0.x"
+   }
 }
