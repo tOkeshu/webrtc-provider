@@ -20,17 +20,29 @@ $(document).ready(function () {
     }
   });
 
+  xmpp.on('presence', function(stanza) {
+    if (stanza.attrs.type)
+        return;
+
+    var jid = new Lightstring.JID(stanza.attrs.from).toBare().toString();
+    var link = $('<a href="#">' + jid + '</a>').click(function() {});
+    $('#contacts ul li[data-jid="' + jid.toString() + '"]').html(link);
+  });
+
   xmpp.on('connected', function(stanza) {
     log('connected');
-    xmpp.presence.send();
-      xmpp.roster.get(null, function(stanza) {
-        var n = stanza.roster.contacts.length;
-        var contact;
-        for (var i = 0; i < n; i++) {
-          contact = stanza.roster.contacts[i];
-          $('#contacts ul').append('<li>' + contact.jid + '</li>');
-        }
-      });
+    xmpp.roster.get(null, function(stanza) {
+      var n = stanza.roster.contacts.length;
+      for (var i = 0; i < n; i++) {
+        var contact = stanza.roster.contacts[i];
+        var jid = new Lightstring.JID(contact.jid).toBare();
+        $('#contacts ul')
+          .append('<li data-jid="' + jid.toString() + '">' +
+                    jid.toString() +
+                  '</li>');
+      }
+      xmpp.presence.send();
+    });
   });
 
   var oldEmit = xmpp.emit;
