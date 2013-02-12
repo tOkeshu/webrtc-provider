@@ -25,8 +25,22 @@ $(document).ready(function () {
         return;
 
     var jid = new Lightstring.JID(stanza.attrs.from).toBare().toString();
-    var link = $('<a href="#">' + jid + '</a>').click(function() {});
+    var link = $('<a href="#">' + jid + '</a>').click(function() {
+        call(xmpp, stanza.attrs.from);
+    });
     $('#contacts ul li[data-jid="' + jid.toString() + '"]').html(link);
+  });
+
+  xmpp.on('iq', function(stanza) {
+    if (!stanza.getChild('offer'))
+      return;
+    var offer = stanza.getChild('offer').text();
+    var iq = '<iq from="' + xmpp.jid + '" to="' + stanza.attrs.from +'" type="result">' +
+               '<answer xmlns="webrtc:iq:sdp">' +
+                 offer +
+               '</answer>' +
+             '</iq>'
+    xmpp.send(iq);
   });
 
   xmpp.on('connected', function(stanza) {
@@ -58,4 +72,17 @@ $(document).ready(function () {
     return false;
   });
 });
+
+function call(xmpp, to) {
+  var offer = 'nothing relevant for now';
+  var iq = '<iq from="' + xmpp.jid + '" to="' + to +'" type="set">' +
+             '<offer xmlns="webrtc:iq:sdp">' +
+               offer +
+             '</offer>' +
+           '</iq>'
+  xmpp.send(iq, function(stanza) {
+    var answer = stanza.getChild().text();
+    console.log(anwser);
+  });
+}
 
