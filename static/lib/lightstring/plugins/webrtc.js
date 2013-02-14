@@ -30,14 +30,11 @@ Lightstring.plugins['webrtc'] = {
         "</iq>"
       );
     },
-    answer: function (aTo, aAnswer, aId){
-      return(
-        "<iq to='" + aTo + "' type='result' id='" + aId + "'>" +
-          "<answer xmlns='" + Lightstring.ns.sdp + "'>" +
-            JSON.stringify(aAnswer) +
-          '</answer>' +
-        "</iq>"
-      );
-    },
+    answer: function (aTo, aAnswer){
+      return new Element('iq', {to: aTo, type: 'result'})
+        .c('answer', {xmlns: Lightstring.ns.sdp})
+          .t(JSON.stringify(aAnswer))
+        .up();
+    }
   },
 };

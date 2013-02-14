@@ -70,7 +70,8 @@ $(document).ready(function () {
   });
 
   webrtc.on('accept', function(stanza, answer) {
-    var iq = Lightstring.stanzas.webrtc.answer(stanza.attrs.from, answer, stanza.attrs.id);
+    var iq = Lightstring.stanzas.webrtc.answer(stanza.attrs.from, answer);
+    iq.attrs.id = stanza.attrs.id;
     xmpp.send(iq);
   });
 
