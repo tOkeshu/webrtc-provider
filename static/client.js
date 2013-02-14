@@ -12,16 +12,6 @@ $(document).ready(function () {
     log('connecting')
   });
 
-  xmpp.on('message', function(stanza) {
-    var body = stanza.getChild('body');
-    if (body) {
-      body = body.text();
-      log(stanza.attrs.from + ' : ' + body);
-      var reply = Lightstring.stanzas.im.chat(stanza.attrs.from, body);
-      xmpp.send(reply);
-    }
-  });
-
   xmpp.on('presence', function(stanza) {
     if (stanza.attrs.type)
       return;
