@@ -1,18 +1,4 @@
-var pc = new mozRTCPeerConnection();
-pc.onaddstream = function(obj) {
-  var type = obj.type;
-  if (type == "video") {
-    var video = $("#remoteVideo")[0];
-    video.mozSrcObject = obj.stream;
-    video.play();
-  } else if (type == "audio") {
-    var audio = $("#remoteAudio")[0];
-    audio.mozSrcObject = obj.stream;
-    audio.play();
-  } else {
-    alert("sender onaddstream of unknown type, obj = " + obj.toSource());
-  }
-};
+var webrtc = new WebRTCDialer({video: true, audio: true});
 
 function log(msg) {
   $('#log').append('<div></div>').append(document.createTextNode(msg));
@@ -20,7 +6,7 @@ function log(msg) {
 
 $(document).ready(function () {
   var xmpp = new Lightstring.Connection('ws://' + document.location.hostname + ':5280');
-  xmpp.load('DIGEST-MD5', 'presence', 'im', 'roster');
+  xmpp.load('DIGEST-MD5', 'presence', 'im', 'roster', 'webrtc');
 
   xmpp.on('connecting', function(stanza) {
     log('connecting')
@@ -42,7 +28,7 @@ $(document).ready(function () {
 
     var jid = new Lightstring.JID(stanza.attrs.from).toBare().toString();
     var link = $('<a href="#">' + jid + '</a>').click(function() {
-      call(xmpp, stanza.attrs.from);
+      webrtc.call(stanza.attrs.from);
     });
     $('#contacts ul li[data-jid="' + jid.toString() + '"]').html(link);
   });
@@ -52,25 +38,7 @@ $(document).ready(function () {
       return;
 
     var offer = JSON.parse(stanza.getChild('offer').text());
-    navigator.mozGetUserMedia({video: true, audio: true}, function(stream) {
-      var video = $("#localVideo")[0];
-      video.mozSrcObject = stream;
-      video.play();
-      pc.addStream(stream);
-      pc.setRemoteDescription(offer, function() {
-        pc.createAnswer(function(answer) {
-          pc.setLocalDescription(answer, function() {
-            answer = JSON.stringify(answer);
-            var iq = '<iq from="' + xmpp.jid + '" to="' + stanza.attrs.from +'" type="result" id="' + stanza.attrs.id + '">' +
-                       '<answer xmlns="webrtc:iq:sdp">' +
-                         answer +
-                       '</answer>' +
-                     '</iq>'
-            xmpp.send(iq);
-          }, function(err) { alert("setLocalDescription failed: " + err) });
-        }, function(err) { alert("createAnswer failed: " + err); });
-      }, function(err) { alert("setRemoteDescription failed: " + err); });
-    }, function(err) { alert("getUserMedia failed: "  + err); });
+    webrtc.accept(stanza, offer);
   });
 
   xmpp.on('connected', function(stanza) {
@@ -101,29 +69,27 @@ $(document).ready(function () {
     xmpp.connect(jid, pass);
     return false;
   });
-});
 
-function call(xmpp, to) {
-  navigator.mozGetUserMedia({video: true, audio: true}, function(stream) {
-    var video = $("#localVideo")[0];
+  // WebRTC Transport
+
+  webrtc.on('call', function(to, offer) {
+    var iq = Lightstring.stanzas.webrtc.offer(to, offer);
+    xmpp.send(iq, function(stanza) {
+        var answer = JSON.parse(stanza.getChild('answer').text());
+        webrtc.answer(answer);
+    });
+  });
+
+  webrtc.on('accept', function(stanza, answer) {
+    var iq = Lightstring.stanzas.webrtc.answer(stanza.attrs.from, answer, stanza.attrs.id);
+    xmpp.send(iq);
+  });
+
+  webrtc.on('stream', function(stream, type, remote) {
+    var video = remote ? $("#remoteVideo")[0] : $("#localVideo")[0];
     video.mozSrcObject = stream;
     video.play();
-    pc.addStream(stream);
-    pc.createOffer(function(offer) {
-      pc.setLocalDescription(offer, function() {
-        var iq = '<iq from="' + xmpp.jid + '" to="' + to +'" type="set">' +
-                   '<offer xmlns="webrtc:iq:sdp">' +
-                     JSON.stringify(offer) +
-                   '</offer>' +
-                 '</iq>';
+  });
 
-        xmpp.send(iq, function(stanza) {
-          var answer = JSON.parse(stanza.getChild('answer').text());
-          pc.setRemoteDescription(answer, function() {});
-        });
-
-      }, function(err) { alert("setLocalDescription failed: " + err) });
-    }, function(err) { alert("createOffer failed: " + err); });
-  }, function(err) { alert("getUserMedia failed: "  + err); });
-}
+});
 
