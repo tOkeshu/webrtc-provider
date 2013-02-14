@@ -1,10 +1,9 @@
-var webrtc = new WebRTCDialer({video: true, audio: true});
-
 function log(msg) {
   $('#log').append('<div></div>').append(document.createTextNode(msg));
 }
 
 $(document).ready(function () {
+  var webrtc = new WebRTCDialer({video: true, audio: true});
   var xmpp = new Lightstring.Connection('ws://' + document.location.hostname + ':5280');
   xmpp.load('DIGEST-MD5', 'presence', 'im', 'roster', 'webrtc');
 
