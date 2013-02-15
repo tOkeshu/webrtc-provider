@@ -2,6 +2,7 @@
 
     WebRTCDialer = function(options) {
         var that = this;
+        EventEmitter.apply(this);
 
         this.pc = mozRTCPeerConnection();
         this.pc.onaddstream = function(obj) {
@@ -11,12 +12,12 @@
         this.options = options;
     };
 
-    WebRTCDialer.prototype = new EventEmitter();
+    WebRTCDialer.prototype = EventEmitter.extend();
 
     WebRTCDialer.prototype._getMedia = function(options, callback) {
         var that = this;
 
-        navigator.mozGetUserMedia(this.options, function(stream) {
+        navigator.mozGetUserMedia(options, function(stream) {
             that.pc.addStream(stream);
             that.emit('stream', stream, 'video', false);
             callback();
