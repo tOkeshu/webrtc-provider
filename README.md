@@ -9,13 +9,9 @@ server. [Prosody](http://prosody.im/) is a good choice for
 developement purpose. Once you have an XMPP server you should create a
 few users and add them in their respective roster via an xmpp client.
 
-Then, install the dependencies and run the gateway:
+Then, install the dependencies and run the server:
 
     $ npm install
-    $ ./node_modules/node-xmpp-bosh/run-server.js
-
-Now you can start the static web server in another terminal:
-
     $ node server.js
 
 and open your browser at http://localhost:5000/
