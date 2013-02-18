@@ -1,8 +1,8 @@
 (function(window) {
-    XMPPProvider = function() {
+    XMPPProvider = function(options) {
         EventEmitter.apply(this);
 
-        this.webrtc = new WebRTCDialer({video: true, audio: true});
+        this.webrtc = new WebRTCDialer(options.webrtc);
         this.xmpp = new Lightstring.Connection('ws://' + document.location.hostname + ':5280');
         this.xmpp.load('DIGEST-MD5', 'presence', 'im', 'roster', 'webrtc');
         this._setup();
@@ -18,7 +18,7 @@
                 return;
 
             var jid = new Lightstring.JID(stanza.attrs.from).toBare();
-            that.emit('presence', {id: stanza.attrs.from, pseudo: jid}, "on");
+            that.emit('presence', {id: stanza.attrs.from, pseudo: jid.toString()}, "on");
         });
 
         this.xmpp.on('iq', function(stanza) {

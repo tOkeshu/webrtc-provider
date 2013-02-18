@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  var provider = new XMPPProvider();
+  var provider = new XMPPProvider({webrtc: {video: true, fake: true}});
 
   $('form').submit(function() {
     var jid = $('#jid').val();
