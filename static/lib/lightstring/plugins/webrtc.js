@@ -22,13 +22,10 @@ Lightstring.plugins['webrtc'] = {
   },
   stanzas: {
     offer: function (aTo, aOffer){
-      return(
-        "<iq to='" + aTo + "' type='set'>" +
-          "<offer xmlns='" + Lightstring.ns.sdp + "'>" +
-            JSON.stringify(aOffer) +
-          '</offer>' +
-        "</iq>"
-      );
+      return new Element('iq', {to: aTo, type: 'set'})
+        .c('offer', {xmlns: Lightstring.ns.sdp})
+          .t(JSON.stringify(aOffer))
+        .up();
     },
     answer: function (aTo, aAnswer){
       return new Element('iq', {to: aTo, type: 'result'})
