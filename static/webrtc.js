@@ -48,8 +48,8 @@
             that.pc.setRemoteDescription(offer, function() {
                 that.pc.createAnswer(function(answer) {
                     that.pc.setLocalDescription(answer, function() {
-                        args.push(answer)
-                        args.unshift('accept')
+                        args.push(answer);
+                        args.unshift('accept');
                         that.emit.apply(that, args);
                     }, function(err) { alert("setLocalDescription failed: " + err) });
                 }, function(err) { alert("createAnswer failed: " + err); });
