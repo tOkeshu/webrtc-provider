@@ -25,6 +25,10 @@ and open your browser at http://localhost:5000/
     $ forever -o logs/stdout.log -e logs/stderr.log start server.js
     $ forever stop server.js
 
+### tests
+
+To run the tests visit http://localhost:5000/tests/
+
 License
 -------
 
