@@ -14,11 +14,16 @@
         var that = this;
 
         this.xmpp.on('presence', function(stanza) {
+            var type = "available";
+
             if (stanza.attrs.type)
-                return;
+                if (stanza.attrs.type != "unavailable")
+                    return;
+                else
+                    type = "unavailable";
 
             var jid = new Lightstring.JID(stanza.attrs.from).toBare();
-            that.emit('presence', {id: stanza.attrs.from, pseudo: jid.toString()}, "on");
+            that.emit('presence', {id: stanza.attrs.from, pseudo: jid.toString()}, type);
         });
 
         this.xmpp.on('iq', function(stanza) {

@@ -17,9 +17,10 @@ $(document).ready(function () {
   });
 
   provider.on('presence', function(who, type) {
-    var link = $('<a href="#">' + who.pseudo + '</a>').click(function() {
-      provider.call(who.id);
-    });
+    var link = $('<a>' + who.pseudo + '</a>');
+
+    if (type === "available")
+      link.attr("href", "#").click(function() { provider.call(who.id); });
     $('#contacts ul li[data-jid="' + who.pseudo + '"]').html(link);
   });
 
