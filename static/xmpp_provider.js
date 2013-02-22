@@ -35,6 +35,7 @@
         });
 
         this.xmpp.on('connected', function(stanza) {
+            that.emit('connected');
             that.xmpp.roster.get(null, function(stanza) {
                 var n = stanza.roster.contacts.length;
                 var roster = [];

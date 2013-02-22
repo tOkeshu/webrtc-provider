@@ -5,6 +5,18 @@ test("it should be an EventEmitter instance", function() {
     ok(provider.on !== undefined, "XMPPProvider has a on method");
 });
 
+asyncTest("it should emit a connected event when the xmpp client is connected", function() {
+    expect(1);
+
+    var provider = new XMPPProvider({webrtc: {video: true, fake: true}});
+    provider.xmpp.roster.get = function() {};
+    provider.on('connected', function() {
+        ok(true, "a connected event has been fired");
+        start();
+    });
+    provider.xmpp.emit('connected');
+});
+
 asyncTest("it should emit a presence", function() {
     expect(1);
 
