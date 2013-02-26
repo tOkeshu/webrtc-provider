@@ -69,6 +69,18 @@ app.post("/logout", function(req, res) {
   });
 });
 
+app.post('/provisioning', function(req, res) {
+  var jid = req.session.user.split('@')[0] + '@xmpp.lo';
+  var credentials = {
+    xmppProvider: {
+      jid: jid,
+      password: 'test'
+    }
+  };
+  users[req.session.user] = credentials;
+  res.send(200, JSON.stringify(credentials));
+});
+
 app.listen(port, function() {
     console.log("Port is " + port);
 });
