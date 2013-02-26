@@ -6,6 +6,7 @@
     <link href="/bootstrap.css" rel="stylesheet">
     <link href="/client.css" rel="stylesheet">
     <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+    <script src="https://login.persona.org/include.js"></script>
     <script type="application/javascript" src="/lib/lightstring/Element.js"></script>
     <script type="application/javascript" src="/lib/lightstring/parser.js"></script>
     <script type="application/javascript" src="/lib/lightstring/lib/bind.js"></script>
@@ -29,11 +30,16 @@
     <article>
 
       <section class="login">
+        <img src="https://mdn.mozillademos.org/files/3963/persona_sign_in_blue.png">
+      </section>
+
+      <section class="provisioning hidden">
         <form class="form-signin">
-          <h2 class="form-signin-heading">Please sign in</h2>
-          <input name="jid" type="text" class="input-block-level" placeholder="Jabber Id">
-          <input name="password" type="password" class="input-block-level" placeholder="Password">
-          <button class="btn btn-large btn-primary" type="submit">Sign in</button>
+          <h2 class="form-signin-heading">Provisioning</h2>
+          <label class="checkbox">
+            <input type="checkbox" disabled checked> XMPP Provider
+          </label>
+          <button class="btn btn-large btn-primary" type="submit">Confirm</button>
         </form>
       </section>
 

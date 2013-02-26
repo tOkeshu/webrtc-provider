@@ -1,16 +1,68 @@
 $(document).ready(function () {
   var provider = new XMPPProvider({webrtc: {video: true, audio: true}});
 
-  $('form').submit(function() {
-    var jid = $('[name="jid"]').val();
-    var pass = $('[name="password"]').val();
-    provider.connect({jid: jid, pass: pass});
+  $('.login img').click(function() {
+      navigator.id.request();
     return false;
+  });
+
+  $('.provisioning form').submit(function() {
+    $.ajax({
+      type: 'POST',
+      url: '/provisioning',
+      success: function(data, status, xhr) {
+        var credentials = JSON.parse(data);
+        var jid = credentials.xmppProvider.jid;
+        var password = credentials.xmppProvider.password;
+        provider.connect({jid: jid, pass: password});
+      },
+      error: function(xhr, status, err) {
+        alert('provisioning failed: ' + err);
+      }
+    });
+    return false;
+  });
+
+  navigator.id.watch({
+    loggedInUser: null,
+    onlogin: function(assertion) {
+      $.ajax({
+        type: 'POST',
+        url: '/login',
+        data: {assertion: assertion},
+        success: function(data, status, xhr) {
+          var credentials = JSON.parse(data);
+          if (Object.keys(credentials).length) {
+            var jid = credentials.xmppProvider.jid;
+            var password = credentials.xmppProvider.password;
+            provider.connect({jid: jid, pass: password});
+          } else {
+            $('.login').addClass('hidden');
+            $('.provisioning').removeClass('hidden');
+          }
+        },
+        error: function(xhr, status, err) {
+          alert("Login failure: " + err);
+        }
+      });
+    },
+    onlogout: function() {
+      $.ajax({
+        type: 'POST',
+        url: '/logout',
+        success: function(res, status, xhr) {
+          window.location.reload();
+        },
+        error: function(xhr, status, err) {
+          alert("Logout failure: " + err);
+        }
+      });
+    }
   });
 
   provider.on('connected', function() {
     $('.media').add('.contacts').removeClass('hidden');
-    $('.login').addClass('hidden');
+    $('.login').add('.provisioning').addClass('hidden');
   });
 
   provider.on('contact-list', function(roster) {
