@@ -5,6 +5,7 @@
 
 var express = require("express"),
     https   = require("https"),
+    crypto  = require("crypto"),
     Client  = require("node-xmpp").Client,
     nxb     = require("node-xmpp-bosh"),
     app     = express();
@@ -71,13 +72,14 @@ app.post("/logout", function(req, res) {
 
 app.post('/provisioning', function(req, res) {
   var jid = req.session.user.split('@')[0] + '@xmpp.lo';
-  var xmpp = new Client({jid: jid, password: 'test', register: true});
+  var password = crypto.randomBytes(16).toString('hex');
+  var xmpp = new Client({jid: jid, password: password, register: true});
 
   function finishProvisioning() {
     var credentials = {
       xmppProvider: {
         jid: jid,
-        password: 'test'
+        password: password
       }
     };
     users[req.session.user] = credentials;
