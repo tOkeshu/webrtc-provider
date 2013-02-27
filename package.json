@@ -7,6 +7,7 @@
     "npm":"1.1.x"
   },
   "dependencies": {
+    "node-xmpp": " 0.3.x",
     "node-xmpp-bosh": " 0.7.x",
     "express": "3.0.x"
    }
