@@ -5,6 +5,7 @@
 
 var express = require("express"),
     https   = require("https"),
+    Client  = require("node-xmpp").Client,
     nxb     = require("node-xmpp-bosh"),
     app     = express();
 
@@ -18,7 +19,6 @@ app.use(express.bodyParser());
 app.use(express.cookieParser("thisistehsecret"));
 app.use(express.session());
 app.use(express.static(__dirname + "/static"));
-
 
 var users = {}
 
@@ -71,14 +71,27 @@ app.post("/logout", function(req, res) {
 
 app.post('/provisioning', function(req, res) {
   var jid = req.session.user.split('@')[0] + '@xmpp.lo';
-  var credentials = {
-    xmppProvider: {
-      jid: jid,
-      password: 'test'
-    }
-  };
-  users[req.session.user] = credentials;
-  res.send(200, JSON.stringify(credentials));
+  var xmpp = new Client({jid: jid, password: 'test', register: true});
+
+  function finishProvisioning() {
+    var credentials = {
+      xmppProvider: {
+        jid: jid,
+        password: 'test'
+      }
+    };
+    users[req.session.user] = credentials;
+    res.send(200, JSON.stringify(credentials));
+    xmpp.end();
+  }
+
+  xmpp.on('online', finishProvisioning);
+  xmpp.on('error', function(err) {
+      if (err.message == "Registration error")
+          finishProvisioning();
+      else
+          throw err;
+  });
 });
 
 app.listen(port, function() {
