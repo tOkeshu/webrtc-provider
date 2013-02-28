@@ -8,6 +8,7 @@ var express = require("express"),
     crypto  = require("crypto"),
     Client  = require("node-xmpp").Client,
     nxb     = require("node-xmpp-bosh"),
+    Sequelize = require("sequelize"),
     app     = express();
 
 var port = process.env.PORT || 5000;
@@ -21,12 +22,31 @@ app.use(express.cookieParser("thisistehsecret"));
 app.use(express.session());
 app.use(express.static(__dirname + "/static"));
 
-var users = {}
+var sequelize = new Sequelize('webrtc-provider', 'webrtc', null, {
+    dialect: 'sqlite',
+    storage: 'database.sqlite'
+});
+
+var User = sequelize.define('User', {
+    email: Sequelize.STRING,
+    jid: Sequelize.STRING,
+    password: Sequelize.STRING
+}, {
+    instanceMethods: {
+        credentials: function() {
+            return {xmppProvider: {jid: this.jid, password: this.password}};
+        }
+    }
+});
+
+User.sync();
 
 app.post("/login", function(req, res) {
   if (req.session.user) {
     console.log("User session for " + req.session.user + " already created!");
-    res.send(200, JSON.stringify(users[req.session.user]));
+      User.find(req.session.user).success(function(user) {
+          res.send(200, JSON.stringify(user.credentials()));
+      });
     return;
   }
   if (!req.body.assertion) {
@@ -45,9 +65,17 @@ app.post("/login", function(req, res) {
   function finishLogin(email) {
     req.session.regenerate(function() {
       console.log("Creating user session for " + email);
-      users[email] = users[email] || {};
-      req.session.user = email;
-      res.send(200, JSON.stringify(users[email]));
+      User.find({where: {email: email}}).success(function(user) {
+          if (!user) {
+              User.create({email: email}).success(function(user) {
+                  req.session.user = user.id;
+                  res.send(200, "{}");
+              })
+          } else {
+              req.session.user = user.id;
+              res.send(200, JSON.stringify(user.credentials()));
+          }
+      });
     });
   }
 });
@@ -71,28 +99,33 @@ app.post("/logout", function(req, res) {
 });
 
 app.post('/provisioning', function(req, res) {
-  var jid = req.session.user.split('@')[0] + '@xmpp.lo';
-  var password = crypto.randomBytes(16).toString('hex');
-  var xmpp = new Client({jid: jid, password: password, register: true});
+  User.find(req.session.user).success(function(user) {
+      var jid = user.email.split('@')[0] + '@xmpp.lo';
+      var password = crypto.randomBytes(16).toString('hex');
+      var xmpp = new Client({jid: jid, password: password, register: true});
 
-  function finishProvisioning() {
-    var credentials = {
-      xmppProvider: {
-        jid: jid,
-        password: password
+      function finishProvisioning() {
+          var credentials = {
+              xmppProvider: {
+                  jid: jid,
+                  password: password
+              }
+          };
+
+          user.jid = jid;
+          user.password = password;
+          user.save()
+          res.send(200, JSON.stringify(user.credentials()));
+          xmpp.end();
       }
-    };
-    users[req.session.user] = credentials;
-    res.send(200, JSON.stringify(credentials));
-    xmpp.end();
-  }
 
-  xmpp.on('online', finishProvisioning);
-  xmpp.on('error', function(err) {
-      if (err.message == "Registration error")
-          finishProvisioning();
-      else
-          throw err;
+      xmpp.on('online', finishProvisioning);
+      xmpp.on('error', function(err) {
+          if (err.message == "Registration error")
+              finishProvisioning();
+          else
+              throw err;
+      });
   });
 });
 
