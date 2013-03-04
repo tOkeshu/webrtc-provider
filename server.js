@@ -9,6 +9,9 @@ var express = require("express"),
     Client  = require("node-xmpp").Client,
     nxb     = require("node-xmpp-bosh"),
     Sequelize = require("sequelize"),
+    utils   = require('./utils'),
+    Promise = utils.Promise,
+    partial = utils.partial,
     app     = express();
 
 var port = process.env.PORT || 5000;
@@ -32,9 +35,26 @@ var User = sequelize.define('User', {
     jid: Sequelize.STRING,
     password: Sequelize.STRING
 }, {
+    classMethods: {
+        findOrCreate: function(email) {
+            var promise = new Promise;
+            User.find({where: {email: email}}).success(function(user) {
+                if (user)
+                    promise.done(user);
+                else
+                    User.create({email: email}).success(function(user) {
+                        promise.done(user);
+                    });
+            });
+            return promise;
+        },
+    },
     instanceMethods: {
         credentials: function() {
-            return {xmppProvider: {jid: this.jid, password: this.password}};
+            var cred = {};
+            if (this.jid && this.password)
+                cred.xmppProvider = {jid: this.jid, password: this.password};
+            return cred;
         }
     }
 });
@@ -42,43 +62,44 @@ var User = sequelize.define('User', {
 User.sync();
 
 app.post("/login", function(req, res) {
-  if (req.session.user) {
-    console.log("User session for " + req.session.user + " already created!");
-      User.find(req.session.user).success(function(user) {
-          res.send(200, JSON.stringify(user.credentials()));
-      });
-    return;
-  }
-  if (!req.body.assertion) {
-    res.send(500, "Invalid login request");
-    return;
-  }
-
-  verifyAssertion(req.body.assertion, audience, function(val) {
-    if (val) {
-      finishLogin(val);
-    } else {
-      res.send(401, "Invalid Persona assertion");
+    if (req.session.user) {
+        sendCredentials(req.session.user, res);
+        return;
     }
-  });
 
-  function finishLogin(email) {
-    req.session.regenerate(function() {
-      console.log("Creating user session for " + email);
-      User.find({where: {email: email}}).success(function(user) {
-          if (!user) {
-              User.create({email: email}).success(function(user) {
-                  req.session.user = user.id;
-                  res.send(200, "{}");
-              })
-          } else {
-              req.session.user = user.id;
-              res.send(200, JSON.stringify(user.credentials()));
-          }
-      });
-    });
-  }
+    if (!req.body.assertion) {
+        invalidLoginRequest(res);
+        return;
+    }
+
+    var invalidAssertion = partial(invalidPersonaAssertion, res);
+    var attachUser = partial(attachUserSession, req, res);
+
+    verifyAssertion(req.body.assertion)
+        .then(User.findOrCreate, invalidAssertion)
+        .then(attachUser);
 });
+
+function sendCredentials(uid, res) {
+    User.find(uid).success(function(user) {
+        res.send(200, JSON.stringify(user.credentials()));
+    });
+}
+
+function invalidLoginRequest(res) {
+    res.send(400, "Invalid login request");
+}
+
+function invalidPersonaAssertion(res) {
+    res.send(400, "Invalid Persona assertion");
+}
+
+function attachUserSession(req, res, user) {
+    req.session.regenerate(function() {
+        req.session.user = user.id;
+        res.send(200, user.credentials());
+    });
+}
 
 app.post("/logout", function(req, res) {
   if (!req.session.user) {
@@ -141,9 +162,10 @@ var bosh_server = nxb.start_bosh({
 });
 nxb.start_websocket(bosh_server);
 
-function verifyAssertion(ast, aud, cb) {
-  var data = "audience=" + encodeURIComponent(aud);
-  data += "&assertion=" + encodeURIComponent(ast);
+function verifyAssertion(assertion) {
+  var promise = new Promise;
+  var data = "audience=" + encodeURIComponent(audience);
+  data += "&assertion=" + encodeURIComponent(assertion);
 
   var options = {
     host: "verifier.login.persona.org",
@@ -164,19 +186,19 @@ function verifyAssertion(ast, aud, cb) {
       try {
         var val = JSON.parse(ret);
       } catch(e) {
-        cb(false);
-        return;
+        promise.err();
       }
       if (val.status == "okay") {
-        cb(val.email);
+        promise.done(val.email);
       } else {
         console.log(data);
         console.log(val);
-        cb(false);
+        promise.err();
       }
     });
   });
 
   req.write(data);
   req.end();
+  return promise;
 }
