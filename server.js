@@ -19,6 +19,47 @@ var port = process.env.PORT || 5000;
 if (!process.env.AUDIENCE)
   throw('need a proper audience');
 
+function verifyAssertion(assertion) {
+  var promise = new Promise;
+  var data = "audience=" + encodeURIComponent(process.env.AUDIENCE);
+  data += "&assertion=" + encodeURIComponent(assertion);
+
+  var options = {
+    host: "verifier.login.persona.org",
+    path: "/verify",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Length": data.length
+    }
+  };
+
+  var req = https.request(options, function(res) {
+    var ret = "";
+    res.on("data", function(chunk) {
+      ret += chunk;
+    });
+    res.on("end", function() {
+      try {
+        var val = JSON.parse(ret);
+      } catch(e) {
+        promise.err();
+      }
+      if (val.status == "okay") {
+        promise.done(val.email);
+      } else {
+        console.log(data);
+        console.log(val);
+        promise.err();
+      }
+    });
+  });
+
+  req.write(data);
+  req.end();
+  return promise;
+}
+
 app.use(express.bodyParser());
 app.use(express.cookieParser("thisistehsecret"));
 app.use(express.session());
@@ -125,43 +166,3 @@ var bosh_server = nxb.start_bosh({
 });
 nxb.start_websocket(bosh_server);
 
-function verifyAssertion(assertion) {
-  var promise = new Promise;
-  var data = "audience=" + encodeURIComponent(audience);
-  data += "&assertion=" + encodeURIComponent(assertion);
-
-  var options = {
-    host: "verifier.login.persona.org",
-    path: "/verify",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Content-Length": data.length
-    }
-  };
-
-  var req = https.request(options, function(res) {
-    var ret = "";
-    res.on("data", function(chunk) {
-      ret += chunk;
-    });
-    res.on("end", function() {
-      try {
-        var val = JSON.parse(ret);
-      } catch(e) {
-        promise.err();
-      }
-      if (val.status == "okay") {
-        promise.done(val.email);
-      } else {
-        console.log(data);
-        console.log(val);
-        promise.err();
-      }
-    });
-  });
-
-  req.write(data);
-  req.end();
-  return promise;
-}
