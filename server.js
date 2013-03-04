@@ -8,8 +8,8 @@ var express = require("express"),
     crypto  = require("crypto"),
     Client  = require("node-xmpp").Client,
     nxb     = require("node-xmpp-bosh"),
-    Sequelize = require("sequelize"),
     utils   = require('./utils'),
+    User    = require('./user').User,
     Promise = utils.Promise,
     partial = utils.partial,
     app     = express();
@@ -18,48 +18,11 @@ var port = process.env.PORT || 5000;
 
 if (!process.env.AUDIENCE)
   throw('need a proper audience');
-var audience = process.env.AUDIENCE;
 
 app.use(express.bodyParser());
 app.use(express.cookieParser("thisistehsecret"));
 app.use(express.session());
 app.use(express.static(__dirname + "/static"));
-
-var sequelize = new Sequelize('webrtc-provider', 'webrtc', null, {
-    dialect: 'sqlite',
-    storage: 'database.sqlite'
-});
-
-var User = sequelize.define('User', {
-    email: Sequelize.STRING,
-    jid: Sequelize.STRING,
-    password: Sequelize.STRING
-}, {
-    classMethods: {
-        findOrCreate: function(email) {
-            var promise = new Promise;
-            User.find({where: {email: email}}).success(function(user) {
-                if (user)
-                    promise.done(user);
-                else
-                    User.create({email: email}).success(function(user) {
-                        promise.done(user);
-                    });
-            });
-            return promise;
-        },
-    },
-    instanceMethods: {
-        credentials: function() {
-            var cred = {};
-            if (this.jid && this.password)
-                cred.xmppProvider = {jid: this.jid, password: this.password};
-            return cred;
-        }
-    }
-});
-
-User.sync();
 
 app.post("/login", function(req, res) {
     if (req.session.user) {
