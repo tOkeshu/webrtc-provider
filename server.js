@@ -17,10 +17,10 @@ var express = require("express"),
 var port = process.env.PORT || 5000;
 
 if (!process.env.AUDIENCE)
-  throw('need a proper audience');
+  throw ('need a proper audience');
 
 function verifyAssertion(assertion) {
-  var promise = new Promise;
+  var promise = new Promise();
   var data = "audience=" + encodeURIComponent(process.env.AUDIENCE);
   data += "&assertion=" + encodeURIComponent(assertion);
 
@@ -34,15 +34,15 @@ function verifyAssertion(assertion) {
     }
   };
 
-  var req = https.request(options, function(res) {
+  var req = https.request(options, function (res) {
     var ret = "";
-    res.on("data", function(chunk) {
+    res.on("data", function (chunk) {
       ret += chunk;
     });
-    res.on("end", function() {
+    res.on("end", function () {
       try {
         var val = JSON.parse(ret);
-      } catch(e) {
+      } catch (e) {
         promise.err();
       }
       if (val.status == "okay") {
@@ -65,7 +65,7 @@ app.use(express.cookieParser("thisistehsecret"));
 app.use(express.session());
 app.use(express.static(__dirname + "/static"));
 
-app.post("/login", function(req, res) {
+app.post("/login", function (req, res) {
     if (req.session.user) {
         sendCredentials(req.session.user, res);
         return;
@@ -85,7 +85,7 @@ app.post("/login", function(req, res) {
 });
 
 function sendCredentials(uid, res) {
-    User.find(uid).success(function(user) {
+    User.find(uid).success(function (user) {
         res.send(200, JSON.stringify(user.credentials()));
     });
 }
@@ -99,13 +99,13 @@ function invalidPersonaAssertion(res) {
 }
 
 function attachUserSession(req, res, user) {
-    req.session.regenerate(function() {
+    req.session.regenerate(function () {
         req.session.user = user.id;
         res.send(200, user.credentials());
     });
 }
 
-app.post("/logout", function(req, res) {
+app.post("/logout", function (req, res) {
   if (!req.session.user) {
     console.log(JSON.stringify(req.session) + " " + req.session.user);
     if (res) {
@@ -115,7 +115,7 @@ app.post("/logout", function(req, res) {
     return;
   }
 
-  req.session.destroy(function() {
+  req.session.destroy(function () {
     var user = req.session.user;
     console.log("Logging out " + user);
     if (res)
@@ -123,8 +123,8 @@ app.post("/logout", function(req, res) {
   });
 });
 
-app.post('/provisioning', function(req, res) {
-  User.find(req.session.user).success(function(user) {
+app.post('/provisioning', function (req, res) {
+  User.find(req.session.user).success(function (user) {
       var jid = user.email.split('@')[0] + '@xmpp.lo';
       var password = crypto.randomBytes(16).toString('hex');
       var xmpp = new Client({jid: jid, password: password, register: true});
@@ -139,13 +139,13 @@ app.post('/provisioning', function(req, res) {
 
           user.jid = jid;
           user.password = password;
-          user.save()
+          user.save();
           res.send(200, JSON.stringify(user.credentials()));
           xmpp.end();
       }
 
       xmpp.on('online', finishProvisioning);
-      xmpp.on('error', function(err) {
+      xmpp.on('error', function (err) {
           if (err.message == "Registration error")
               finishProvisioning();
           else
@@ -154,7 +154,7 @@ app.post('/provisioning', function(req, res) {
   });
 });
 
-app.listen(port, function() {
+app.listen(port, function () {
     console.log("Port is " + port);
 });
 

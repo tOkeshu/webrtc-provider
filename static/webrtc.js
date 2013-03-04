@@ -31,10 +31,10 @@
         this._getMedia(this.options, function() {
             that.pc.createOffer(function(offer) {
                 that.pc.setLocalDescription(offer, function() {
-                    args.push(offer)
-                    args.unshift('call')
+                    args.push(offer);
+                    args.unshift('call');
                     that.emit.apply(that, args);
-                }, function(err) { alert("setLocalDescription failed: " + err) });
+                }, function(err) { alert("setLocalDescription failed: " + err); });
             }, function(err) { alert("createOffer failed: " + err); });
         });
     };
@@ -51,7 +51,7 @@
                         args.push(answer);
                         args.unshift('accept');
                         that.emit.apply(that, args);
-                    }, function(err) { alert("setLocalDescription failed: " + err) });
+                    }, function(err) { alert("setLocalDescription failed: " + err); });
                 }, function(err) { alert("createAnswer failed: " + err); });
             }, function(err) { alert("setRemoteDescription failed: " + err); });
         });

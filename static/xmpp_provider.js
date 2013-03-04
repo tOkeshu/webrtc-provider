@@ -42,7 +42,7 @@
 
                 for (var i = 0; i < n; i++) {
                     var contact = stanza.roster.contacts[i];
-                    roster.push(contact.jid)
+                    roster.push(contact.jid);
                 }
 
                 that.emit('contact-list', roster);
@@ -54,7 +54,7 @@
         this.xmpp.emit = function() {
             console.log(arguments);
             oldEmit.apply(that.xmpp, arguments);
-        }
+        };
 
         // WebRTC Transport
 

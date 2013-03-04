@@ -1,0 +1,11 @@
+{
+  "curly": false,
+  "eqeqeq": true,
+  "expr": true,
+  "forin": true,
+  "indent": 2,
+  "undef": true,
+  "unused": true,
+  "white": true,
+  "devel": true
+}

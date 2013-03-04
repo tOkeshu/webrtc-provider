@@ -13,13 +13,13 @@ var User = sequelize.define('User', {
     password: Sequelize.STRING
 }, {
     classMethods: {
-        findOrCreate: function(email) {
-            var promise = new Promise;
-            User.find({where: {email: email}}).success(function(user) {
+        findOrCreate: function (email) {
+            var promise = new Promise();
+            User.find({where: {email: email}}).success(function (user) {
                 if (user)
                     promise.done(user);
                 else
-                    User.create({email: email}).success(function(user) {
+                    User.create({email: email}).success(function (user) {
                         promise.done(user);
                     });
             });
@@ -27,7 +27,7 @@ var User = sequelize.define('User', {
         },
     },
     instanceMethods: {
-        credentials: function() {
+        credentials: function () {
             var cred = {};
             if (this.jid && this.password)
                 cred.xmppProvider = {jid: this.jid, password: this.password};
