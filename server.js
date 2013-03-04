@@ -66,43 +66,43 @@ app.use(express.session());
 app.use(express.static(__dirname + "/static"));
 
 app.post("/login", function (req, res) {
-    if (req.session.user) {
-        sendCredentials(req.session.user, res);
-        return;
-    }
+  if (req.session.user) {
+    sendCredentials(req.session.user, res);
+    return;
+  }
 
-    if (!req.body.assertion) {
-        invalidLoginRequest(res);
-        return;
-    }
+  if (!req.body.assertion) {
+    invalidLoginRequest(res);
+    return;
+  }
 
-    var invalidAssertion = partial(invalidPersonaAssertion, res);
-    var attachUser = partial(attachUserSession, req, res);
+  var invalidAssertion = partial(invalidPersonaAssertion, res);
+  var attachUser = partial(attachUserSession, req, res);
 
-    verifyAssertion(req.body.assertion)
-        .then(User.findOrCreate, invalidAssertion)
-        .then(attachUser);
+  verifyAssertion(req.body.assertion)
+    .then(User.findOrCreate, invalidAssertion)
+    .then(attachUser);
 });
 
 function sendCredentials(uid, res) {
-    User.find(uid).success(function (user) {
-        res.send(200, JSON.stringify(user.credentials()));
-    });
+  User.find(uid).success(function (user) {
+    res.send(200, JSON.stringify(user.credentials()));
+  });
 }
 
 function invalidLoginRequest(res) {
-    res.send(400, "Invalid login request");
+  res.send(400, "Invalid login request");
 }
 
 function invalidPersonaAssertion(res) {
-    res.send(400, "Invalid Persona assertion");
+  res.send(400, "Invalid Persona assertion");
 }
 
 function attachUserSession(req, res, user) {
-    req.session.regenerate(function () {
-        req.session.user = user.id;
-        res.send(200, user.credentials());
-    });
+  req.session.regenerate(function () {
+    req.session.user = user.id;
+    res.send(200, user.credentials());
+  });
 }
 
 app.post("/logout", function (req, res) {
@@ -125,37 +125,37 @@ app.post("/logout", function (req, res) {
 
 app.post('/provisioning', function (req, res) {
   User.find(req.session.user).success(function (user) {
-      var jid = user.email.split('@')[0] + '@xmpp.lo';
-      var password = crypto.randomBytes(16).toString('hex');
-      var xmpp = new Client({jid: jid, password: password, register: true});
+    var jid = user.email.split('@')[0] + '@xmpp.lo';
+    var password = crypto.randomBytes(16).toString('hex');
+    var xmpp = new Client({jid: jid, password: password, register: true});
 
-      function finishProvisioning() {
-          var credentials = {
-              xmppProvider: {
-                  jid: jid,
-                  password: password
-              }
-          };
+    function finishProvisioning() {
+      var credentials = {
+        xmppProvider: {
+          jid: jid,
+          password: password
+        }
+      };
 
-          user.jid = jid;
-          user.password = password;
-          user.save();
-          res.send(200, JSON.stringify(user.credentials()));
-          xmpp.end();
-      }
+      user.jid = jid;
+      user.password = password;
+      user.save();
+      res.send(200, JSON.stringify(user.credentials()));
+      xmpp.end();
+    }
 
-      xmpp.on('online', finishProvisioning);
-      xmpp.on('error', function (err) {
-          if (err.message == "Registration error")
-              finishProvisioning();
-          else
-              throw err;
-      });
+    xmpp.on('online', finishProvisioning);
+    xmpp.on('error', function (err) {
+      if (err.message == "Registration error")
+        finishProvisioning();
+      else
+        throw err;
+    });
   });
 });
 
 app.listen(port, function () {
-    console.log("Port is " + port);
+  console.log("Port is " + port);
 });
 
 var bosh_server = nxb.start_bosh({

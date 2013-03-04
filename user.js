@@ -8,32 +8,32 @@ var sequelize = new Sequelize('webrtc-provider', 'webrtc', null, {
 });
 
 var User = sequelize.define('User', {
-    email: Sequelize.STRING,
-    jid: Sequelize.STRING,
-    password: Sequelize.STRING
+  email: Sequelize.STRING,
+  jid: Sequelize.STRING,
+  password: Sequelize.STRING
 }, {
-    classMethods: {
-        findOrCreate: function (email) {
-            var promise = new Promise();
-            User.find({where: {email: email}}).success(function (user) {
-                if (user)
-                    promise.done(user);
-                else
-                    User.create({email: email}).success(function (user) {
-                        promise.done(user);
-                    });
-            });
-            return promise;
-        },
+  classMethods: {
+    findOrCreate: function (email) {
+      var promise = new Promise();
+      User.find({where: {email: email}}).success(function (user) {
+        if (user)
+          promise.done(user);
+        else
+          User.create({email: email}).success(function (user) {
+            promise.done(user);
+          });
+      });
+      return promise;
     },
-    instanceMethods: {
-        credentials: function () {
-            var cred = {};
-            if (this.jid && this.password)
-                cred.xmppProvider = {jid: this.jid, password: this.password};
-            return cred;
-        }
+  },
+  instanceMethods: {
+    credentials: function () {
+      var cred = {};
+      if (this.jid && this.password)
+        cred.xmppProvider = {jid: this.jid, password: this.password};
+      return cred;
     }
+  }
 });
 
 User.sync();
