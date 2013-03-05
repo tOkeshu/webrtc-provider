@@ -18,6 +18,8 @@ var port = process.env.PORT || 5000;
 
 if (!process.env.AUDIENCE)
   throw ('need a proper audience');
+if (!process.env.XMPP_DOMAIN)
+  throw ('need a proper xmpp domain');
 
 function verifyAssertion(assertion) {
   var promise = new Promise();
@@ -125,7 +127,7 @@ app.post("/logout", function (req, res) {
 
 app.post('/provisioning', function (req, res) {
   User.find(req.session.user).success(function (user) {
-    var jid = user.email.split('@')[0] + '@xmpp.lo';
+    var jid = user.email.split('@')[0] + '@' + process.env.XMPP_DOMAIN;
     var password = crypto.randomBytes(16).toString('hex');
     var xmpp = new Client({jid: jid, password: password, register: true});
 
