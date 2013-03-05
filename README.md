@@ -22,7 +22,7 @@ and open your browser at http://localhost:5000/
 
     $ npm install -g forever # install forever system wide
     $ cd webrtc-provider
-    $ forever -o logs/stdout.log -e logs/stderr.log start server.js
+    $ env AUDIENCE="example.com" XMPP_DOMAIN="example.com" forever -o logs/stdout.log -e logs/stderr.log start server.js
     $ forever stop server.js
 
 ### tests
