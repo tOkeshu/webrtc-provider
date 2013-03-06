@@ -3,8 +3,8 @@ var Sequelize = require("sequelize"),
     Promise   = utils.Promise;
 
 var sequelize = new Sequelize('webrtc-provider', 'webrtc', null, {
-    dialect: 'sqlite',
-    storage: 'database.sqlite'
+  dialect: 'sqlite',
+  storage: 'database.sqlite'
 });
 
 var User = sequelize.define('User', {
