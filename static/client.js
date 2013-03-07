@@ -2,7 +2,7 @@ $(document).ready(function () {
   var provider = new XMPPProvider({webrtc: {video: true, audio: true}});
 
   $('.login img').click(function() {
-      navigator.id.request();
+    navigator.id.request();
     return false;
   });
 
