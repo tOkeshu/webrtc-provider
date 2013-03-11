@@ -1,0 +1,9 @@
+{
+    "name": "WebRTC Provider",
+    "description": "",
+    "version": "0.0.1",
+    "url": "https://github.com/tOkeshu/webrtc-provider",
+    "options": {
+        "exclude": "static/lib,static/tests"
+    }
+}

@@ -1,4 +1,14 @@
 (function(window) {
+  /**
+    Provides the XMPPProvider class
+    @module xmpp_provider.js
+  **/
+
+  /**
+    A Service Provider Adapter based on XMPP
+    @class XMPPProvider
+    @constructor
+  **/
   XMPPProvider = function(options) {
     EventEmitter.apply(this);
 
@@ -23,6 +33,14 @@
           type = "unavailable";
 
       var jid = new Lightstring.JID(stanza.attrs.from).toBare();
+
+      /**
+        Fired when the SPA receive a presence notification
+        @event presence
+        @param {object} who
+          @param {string} who.nick
+          @param {string} who.jid
+      **/
       that.emit('presence', {id: stanza.attrs.from, pseudo: jid.toString()}, type);
     });
 
@@ -35,6 +53,10 @@
     });
 
     this.xmpp.on('connected', function(stanza) {
+      /**
+        Fired when the SPA is connected to the XMPP server
+        @event connected
+      **/
       that.emit('connected');
       that.xmpp.roster.get(null, function(stanza) {
         var n = stanza.roster.contacts.length;
@@ -45,6 +67,11 @@
           roster.push(contact.jid);
         }
 
+        /**
+          Fired when the SPA retrieve the roster
+          @event contact-list
+          @param {Array} contacts
+        **/
         that.emit('contact-list', roster);
         that.xmpp.presence.send();
       });
@@ -77,10 +104,24 @@
     });
   };
 
+  /**
+    Connect the SPA to the XMPP server
+
+    @method connect
+    @param {Object} credentials xmpp credentials
+       @param {String} credentials.jid
+       @param {String} credentials.pass
+  **/
   XMPPProvider.prototype.connect = function(credentials) {
     this.xmpp.connect(credentials.jid, credentials.pass);
   };
 
+  /**
+    Call someone
+
+    @method call
+    @param {Object} who a jid to call via WebRTC
+  **/
   XMPPProvider.prototype.call = function(who) {
     this.webrtc.call(who);
   };
