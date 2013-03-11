@@ -29,6 +29,16 @@ and open your browser at http://localhost:5000/
 
 To run the tests visit http://localhost:5000/tests/
 
+### doc
+
+To compile the in-code documentation you need `yuidoc`:
+
+    $ npm install -g yuidocjs
+    $ yuidoc -T simple .
+    $ firefox out/index.html
+
+The rest of the documentation is in `/docs`.
+
 License
 -------
 
