@@ -9,6 +9,13 @@ server. [Prosody](http://prosody.im/) is a good choice for
 developement purpose. Once you have an XMPP server you should create a
 few users and add them in their respective roster via an xmpp client.
 
+On OS X, you'll need to install libicu:
+
+    $ brew install icu4c
+    # ugly workaround from https://github.com/astro/node-stringprep/pull/19/files
+    $ ln -s /usr/local/Cellar/icu4c/<VERSION>/bin/icu-config /usr/local/bin/icu-config
+    $ ln -s /usr/local/Cellar/icu4c/<VERSION>/include/unicode /usr/local/include
+
 Then, checkout the code, install the dependencies and run the server:
 
     $ git clone https://github.com/tOkeshu/webrtc-provider.git
@@ -17,6 +24,14 @@ Then, checkout the code, install the dependencies and run the server:
     $ node server.js
 
 and open your browser at http://localhost:5000/
+
+On OS X, conservative folks will remove the symlinks created earlier:
+
+    $ rm /usr/local/bin/icu-config
+    $ ln -s /usr/local/include/unicode
+
+As these links are intentionally not created by the brew formula due to known
+issues.
 
 ### production
 
