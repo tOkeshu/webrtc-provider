@@ -1,10 +1,5 @@
 (function(window) {
   /**
-    Provides the XMPPProvider class
-    @module xmpp_provider.js
-  **/
-
-  /**
     A Service Provider Adapter based on XMPP
     @class XMPPProvider
     @constructor
