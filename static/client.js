@@ -82,9 +82,12 @@ $(document).ready(function () {
 
   provider.on('contact-list', function(roster) {
     var n = roster.length;
+    $('.contacts ul').html('');
+
     for (var i = 0; i < n; i++) {
+      var contact = $('<button class="btn btn-success disabled">' + roster[i] + '</a>');
       $('.contacts ul')
-        .append('<li data-jid="' + roster[i] + '">' + roster[i] + '</li>');
+        .append($('<li data-jid="' + roster[i] + '">').append(contact));
     }
   });
 

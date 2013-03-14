@@ -9,6 +9,7 @@
 
     this.webrtc = new WebRTCDialer(options.webrtc);
     this.xmpp = new Lightstring.Connection('ws://' + document.location.hostname + ':5280');
+    this.roster = [];
     this.xmpp.load('DIGEST-MD5', 'presence', 'im', 'roster', 'webrtc');
     this._setup();
   };
@@ -22,10 +23,25 @@
       var type = "available";
 
       if (stanza.attrs.type)
-        if (stanza.attrs.type != "unavailable")
+        if (stanza.attrs.type === 'subscribe') {
+          var subscribed = new Element('presence', {
+              to: stanza.attrs.from,
+              type: 'subscribed'
+          });
+          that.xmpp.send(subscribed);
           return;
-        else
+        } else if (stanza.attrs.type === 'subscribed') {
+          var iq = new Element('iq', {type: 'set'})
+           .c('query', {xmlns: 'jabber:iq:roster'})
+             .c('item', {jid: stanza.attrs.from})
+             .up()
+           .up();
+          that.xmpp.send(iq);
+        }else if (stanza.attrs.type != "unavailable") {
+          return;
+        } else {
           type = "unavailable";
+        }
 
       var jid = new Lightstring.JID(stanza.attrs.from).toBare();
 
@@ -40,6 +56,14 @@
     });
 
     this.xmpp.on('iq', function(stanza) {
+      if (stanza.attrs.type === 'set') {
+        var contact = stanza.getChild('query').getChild('item').attrs.jid;
+        if (that.roster.indexOf(contact) == -1) {
+          that.roster.push(contact);
+          that.emit('contact-list', that.roster);
+        }
+      }
+
       if (!stanza.getChild('offer'))
         return;
 
@@ -55,11 +79,11 @@
       that.emit('connected');
       that.xmpp.roster.get(null, function(stanza) {
         var n = stanza.roster.contacts.length;
-        var roster = [];
 
         for (var i = 0; i < n; i++) {
           var contact = stanza.roster.contacts[i];
-          roster.push(contact.jid);
+          if (that.roster.indexOf(contact.jid == -1))
+            that.roster.push(contact.jid);
         }
 
         /**
@@ -67,7 +91,7 @@
           @event contact-list
           @param {Array} contacts
         **/
-        that.emit('contact-list', roster);
+        that.emit('contact-list', that.roster);
         that.xmpp.presence.send();
       });
     });
