@@ -17,6 +17,15 @@ $(document).ready(function () {
     return false;
   });
 
+  $('.contacts .add-contact').click(function() {
+    var input = $(this).siblings('[type="text"]');
+    var contact = input.val();
+
+    provider.subscribe(contact);
+
+    return false;
+  });
+
   $('.provisioning form').submit(function() {
     $.ajax({
       type: 'POST',
