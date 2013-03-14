@@ -27,10 +27,9 @@ and open your browser at http://localhost:5000/
 
 On OS X, conservative folks will remove the symlinks created earlier:
 
-    $ rm /usr/local/bin/icu-config
-    $ ln -s /usr/local/include/unicode
+    $ rm /usr/local/bin/icu-config /usr/local/include/unicode
 
-As these links are intentionally not created by the brew formula due to known
+as these links are intentionally not created by the brew formula due to known
 issues.
 
 ### production
