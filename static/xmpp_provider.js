@@ -121,6 +121,12 @@
     this.webrtc.call(who);
   };
 
+  XMPPProvider.prototype.subscribe = function(who) {
+    var contact = who.replace('@', '-') + '@xmpp.lo';
+    var stanza = new Element('presence', {to: contact, type: 'subscribe'});
+    this.xmpp.send(stanza);
+  };
+
   window.XMPPProvider = XMPPProvider;
 }(window));
 

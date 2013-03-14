@@ -1,8 +1,19 @@
 $(document).ready(function () {
   var provider = new XMPPProvider({webrtc: {video: true, audio: true}});
+  var contacts = [];
 
   $('.login img').click(function() {
     navigator.id.request();
+    return false;
+  });
+
+  $('.provisioning .add-contact').click(function() {
+    var input = $(this).siblings('[type="text"]');
+    var contact = input.val();
+    contacts.push(contact);
+
+    $(this).parent().prepend($('<p>').text(contact));
+
     return false;
   });
 
@@ -63,6 +74,10 @@ $(document).ready(function () {
   provider.on('connected', function() {
     $('.media').add('.contacts').removeClass('hidden');
     $('.login').add('.provisioning').addClass('hidden');
+
+    $.each(contacts, function(i, contact) {
+      provider.subscribe(contact);
+    });
   });
 
   provider.on('contact-list', function(roster) {
