@@ -90,14 +90,17 @@ $(document).ready(function () {
   });
 
   provider.on('contact-list', function(roster) {
-    var n = roster.length;
     $('.contacts ul').html('');
 
-    for (var i = 0; i < n; i++) {
-      var contact = $('<button class="btn btn-success disabled">' + roster[i] + '</a>');
+    $.each(roster, function(id, infos) {
+      var contact = $('<button class="btn btn-success disabled">' + id + '</a>');
+
+      if (infos.presence === 'available')
+        contact.removeClass('disabled');
+
       $('.contacts ul')
-        .append($('<li data-jid="' + roster[i] + '">').append(contact));
-    }
+        .append($('<li data-jid="' + id + '">').append(contact));
+    });
   });
 
   provider.on('presence', function(who, type) {

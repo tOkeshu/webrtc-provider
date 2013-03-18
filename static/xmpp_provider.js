@@ -9,7 +9,7 @@
 
     this.webrtc = new WebRTCDialer(options.webrtc);
     this.xmpp = new Lightstring.Connection('ws://' + document.location.hostname + ':5280');
-    this.roster = [];
+    this.roster = {};
     this.xmpp.load('DIGEST-MD5', 'presence', 'im', 'roster', 'webrtc');
     this._setup();
   };
@@ -22,22 +22,28 @@
     this.xmpp.on('presence', function(stanza) {
       var type = "available";
 
+      function updateRoster(jid) {
+        var iq = new Element('iq', {type: 'set'})
+         .c('query', {xmlns: 'jabber:iq:roster'})
+           .c('item', {jid: stanza.attrs.from})
+           .up()
+         .up();
+        that.xmpp.send(iq);
+      }
+
       if (stanza.attrs.type)
         if (stanza.attrs.type === 'subscribe') {
           var subscribed = new Element('presence', {
               to: stanza.attrs.from,
               type: 'subscribed'
           });
+          var subscribe = new Element('presence', {to: stanza.attrs.from, type: 'subscribe'});
           that.xmpp.send(subscribed);
+          that.xmpp.send(subscribe);
           return;
         } else if (stanza.attrs.type === 'subscribed') {
-          var iq = new Element('iq', {type: 'set'})
-           .c('query', {xmlns: 'jabber:iq:roster'})
-             .c('item', {jid: stanza.attrs.from})
-             .up()
-           .up();
-          that.xmpp.send(iq);
-        }else if (stanza.attrs.type != "unavailable") {
+          updateRoster(jid);
+        } else if (stanza.attrs.type != "unavailable") {
           return;
         } else {
           type = "unavailable";
@@ -56,12 +62,11 @@
     });
 
     this.xmpp.on('iq', function(stanza) {
-      if (stanza.attrs.type === 'set') {
+      if (stanza.attrs.type === 'set' && stanza.getChild('query')) {
         var contact = stanza.getChild('query').getChild('item').attrs.jid;
-        if (that.roster.indexOf(contact) == -1) {
-          that.roster.push(contact);
-          that.emit('contact-list', that.roster);
-        }
+        that.roster[contact] = {presence: 'unavailable'};
+        that.emit('contact-list', that.roster);
+        that.xmpp.presence.send();
       }
 
       if (!stanza.getChild('offer'))
@@ -82,8 +87,7 @@
 
         for (var i = 0; i < n; i++) {
           var contact = stanza.roster.contacts[i];
-          if (that.roster.indexOf(contact.jid == -1))
-            that.roster.push(contact.jid);
+          that.roster[contact.jid] = {presence: 'unavailable'};
         }
 
         /**
