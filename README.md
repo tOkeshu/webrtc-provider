@@ -1,5 +1,7 @@
-WebRTC Provider
+WebRTC Provider [Deprecated]
 ===============
+
+**Deprecated**: (I leave that here just for the sake of history)
 
 Getting started
 ---------------
